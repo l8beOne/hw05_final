@@ -8,7 +8,9 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ('text', 'group', 'image')
         help_texts = {
+            'text': 'Текст поста',
             'group': 'Группа, которой принадлежит данный пост.',
+            'image': 'Картинка, которая будет содержаться в посте'
         }
 
 

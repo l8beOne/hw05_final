@@ -34,7 +34,21 @@ class PostRoutesTests(TestCase):
             reverse('posts:post_create'): '/create/',
             reverse(
                 'posts:post_edit',
-                kwargs={'post_id': cls.post.pk}): f'/posts/{cls.post.pk}/edit/'
+                kwargs={'post_id': cls.post.pk}
+            ): f'/posts/{cls.post.pk}/edit/',
+            reverse(
+                'posts:add_comment',
+                kwargs={'post_id': cls.post.pk}
+            ): f'/posts/{cls.post.pk}/comment/',
+            reverse('posts:follow_index'): '/follow/',
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': cls.user.username}
+            ): f'/profile/{cls.user.username}/follow/',
+            reverse(
+                'posts:profile_unfollow',
+                kwargs={'username': cls.user.username}
+            ): f'/profile/{cls.user.username}/unfollow/',
         }
 
     def test_routs(self):

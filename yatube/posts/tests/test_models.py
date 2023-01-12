@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..models import Group, Post
+from ..models import Group, Post, Comment, Follow
 
 
 User = get_user_model()
@@ -23,12 +23,18 @@ class PostModelTest(TestCase):
             group=cls.group,
             pub_date='Дата публикации',
         )
+        cls.comment = Comment.objects.create(
+            text='Тестовый коммент',
+            author=cls.user,
+            post=cls.post
+        )
 
     def test_models_have_correct_object_names(self):
         """Проверяем, что у моделей корректно работает __str__."""
         str_dict = {
             self.group.title: str(self.group),
             self.post.text[:Post.POST_LENGHT]: str(self.post),
+            self.comment.text: str(self.comment)
         }
         for field, expected_value in str_dict.items():
             with self.subTest(field=field):
@@ -48,19 +54,27 @@ class PostModelTest(TestCase):
             'slug': 'Фрагмент URL-адреса',
             'description': 'Описание',
         }
-        list_of_verbose_names_dicts = [
-            field_verboses_posts,
-            field_verboses_groups
-        ]
-        for dicts in list_of_verbose_names_dicts:
+        field_verboses_comments = {
+            'post': 'Пост, под которым оставлен комментарий',
+            'author': 'Автор комментария',
+            'text': 'Текст комментария',
+            'created': 'Дата публикации комментария',
+        }
+        field_verboses_follows = {
+            'user': 'Подписчик',
+            'author': 'Автор',
+        }
+        dict_of_verbose_names_dicts = {
+            Post: field_verboses_posts,
+            Group: field_verboses_groups,
+            Comment: field_verboses_comments,
+            Follow: field_verboses_follows
+        }
+        for classes, dicts in dict_of_verbose_names_dicts.items():
             for field, expected_value in dicts.items():
                 with self.subTest(field=field):
-                    if dicts == field_verboses_posts:
-                        value = Post
-                    else:
-                        value = Group
                     self.assertEqual(
-                        value._meta.get_field(field).verbose_name,
+                        classes._meta.get_field(field).verbose_name,
                         expected_value
                     )
 
@@ -75,16 +89,18 @@ class PostModelTest(TestCase):
             'slug': 'Впиши сюда фрагмент URL-адреса группы',
             'description': 'Впиши сюда описание группы'
         }
-        list_of_help_text_dicts = [
-            field_help_texts_posts,
-            field_help_texts_groups
-        ]
-        for dicts in list_of_help_text_dicts:
+        field_help_texts_comments = {
+            'text': 'Впиши сюда текст комментария'
+        }
+        dict_of_help_text_dicts = {
+            Post: field_help_texts_posts,
+            Group: field_help_texts_groups,
+            Comment: field_help_texts_comments,
+        }
+        for classes, dicts in dict_of_help_text_dicts.items():
             for field, expected_value in dicts.items():
                 with self.subTest(field=field):
-                    if dicts == field_help_texts_posts:
-                        value = Post
-                    else:
-                        value = Group
                     self.assertEqual(
-                        value._meta.get_field(field).help_text, expected_value)
+                        classes._meta.get_field(field).help_text,
+                        expected_value
+                    )

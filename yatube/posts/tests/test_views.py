@@ -10,29 +10,34 @@ from posts.models import Group, Post, User, Comment, Follow
 class PaginatorViewsTest(TestCase):
     TEST_OF_POST = 13
 
-    def setUp(self):
-        self.guest_client = Client()
-        self.user = User.objects.create_user(username='auth')
-        self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
-        self.group = Group.objects.create(title='Тестовая группа',
-                                          slug='test_group')
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user = User.objects.create_user(username='auth')
+        cls.group = Group.objects.create(
+            title='Тестовая группа',
+            slug='test_group')
         posts = [Post(
             text=f'Тестовый текст {i}',
-            group=self.group,
-            author=self.user) for i in range(self.TEST_OF_POST)]
-        self.posts = Post.objects.bulk_create(posts)
-        self.REVERSE_PAGES = (
+            group=cls.group,
+            author=cls.user) for i in range(cls.TEST_OF_POST)]
+        cls.posts = Post.objects.bulk_create(posts)
+        cls.REVERSE_PAGES = (
             reverse('posts:index'),
             reverse(
                 'posts:profile',
-                kwargs={'username': f'{self.user.username}'}
+                kwargs={'username': f'{cls.user.username}'}
             ),
             reverse(
                 'posts:group_list',
-                kwargs={'slug': f'{self.group.slug}'}
+                kwargs={'slug': f'{cls.group.slug}'}
             )
         )
+
+    def setUp(self):
+        self.guest_client = Client()
+        self.authorized_client = Client()
+        self.authorized_client.force_login(self.user)
         cache.clear()
 
     def test_correct_page_context_guest_client(self):
@@ -78,22 +83,6 @@ class PostURLTests(TestCase):
             author=cls.user,
             post=cls.post
         )
-        cls.templates_pages_names = {
-            reverse('posts:index'): 'posts/index.html',
-            (reverse(
-                'posts:group_list',
-                kwargs={'slug': cls.group.slug})): 'posts/group_list.html',
-            reverse(
-                'posts:profile',
-                kwargs={'username': cls.user.username}): 'posts/profile.html',
-            (reverse(
-                'posts:post_detail',
-                kwargs={'post_id': cls.post.pk})): 'posts/post_detail.html',
-            reverse('posts:post_create'): 'posts/create_post.html',
-            (reverse(
-                'posts:post_edit',
-                kwargs={'post_id': cls.post.pk})): 'posts/create_post.html',
-        }
         cls.value_of_every_page = {
             (reverse('posts:index')): 'page_obj',
             (reverse(
@@ -123,13 +112,6 @@ class PostURLTests(TestCase):
         self.client_become_follower = Client()
         self.client_become_follower.force_login(self.follower)
         cache.clear()
-
-    def test_pages_uses_correct_template(self):
-        """URL-адрес использует соответствующий шаблон."""
-        for reverse_name, template in self.templates_pages_names.items():
-            with self.subTest(reverse_name=reverse_name):
-                response = self.authorized_client.get(reverse_name)
-                self.assertTemplateUsed(response, template)
 
     def test_index_page_show_correct_context(self):
         """Шаблон index, group_list, profile, post_detail

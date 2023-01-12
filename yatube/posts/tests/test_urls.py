@@ -22,24 +22,33 @@ class PostURLTests(TestCase):
             author=cls.user,
             group=cls.group,
         )
-        cls.routes_to_templates = {
-            '/': 'posts/index.html',
-            f'/group/{cls.group.slug}/': 'posts/group_list.html',
-            f'/profile/{cls.user.username}/': 'posts/profile.html',
-            f'/posts/{cls.post.pk}/': 'posts/post_detail.html',
-            '/create/': 'posts/create_post.html',
-            f'/posts/{cls.post.pk}/edit/': 'posts/create_post.html'
+        cls.INDEX_URL = '/'
+        cls.GROUP_LIST_URL = f'/group/{cls.group.slug}/'
+        cls.PROFILE_URL = f'/profile/{cls.user.username}/'
+        cls.POST_DETAIL_URL = f'/posts/{cls.post.pk}/'
+        cls.CREATE_POST_URL = '/create/'
+        cls.POST_EDIT_URL = f'/posts/{cls.post.pk}/edit/'
+        cls.FOLLOW = '/follow/'
+        cls.UNEXISTING_PAGE = '/unexisting_page/'
+        cls.ROUTES_TO_TEMPLATES = {
+            cls.INDEX_URL: 'posts/index.html',
+            cls.GROUP_LIST_URL: 'posts/group_list.html',
+            cls.PROFILE_URL: 'posts/profile.html',
+            cls.POST_DETAIL_URL: 'posts/post_detail.html',
+            cls.CREATE_POST_URL: 'posts/create_post.html',
+            cls.POST_EDIT_URL: 'posts/create_post.html',
+            cls.FOLLOW: 'posts/follow.html'
         }
-        cls.url_names_for_guests = (
-            '/',
-            f'/group/{cls.group.slug}/',
-            f'/profile/{cls.user.username}/',
-            f'/posts/{cls.post.pk}/',
-            '/unexisting_page/',
+        cls.URL_NAMES_FOR_GUESTS = (
+            cls.INDEX_URL,
+            cls.GROUP_LIST_URL,
+            cls.PROFILE_URL,
+            cls.POST_DETAIL_URL,
+            cls.UNEXISTING_PAGE,
         )
-        cls.list_of_difrnt_clients = [
-            cls.routes_to_templates,
-            cls.url_names_for_guests
+        cls.LIST_OF_DIFFERENT_CLIENTS = [
+            cls.ROUTES_TO_TEMPLATES,
+            cls.URL_NAMES_FOR_GUESTS
         ]
         login_then_create = '/auth/login/?next=/create/'
         login_then_edit = f'/auth/login/?next=/posts/{cls.post.pk}/edit/'
@@ -51,7 +60,6 @@ class PostURLTests(TestCase):
 
     def setUp(self):
         self.guest_client = Client()
-        self.user = User.objects.create_user(username='User')
         self.authorized_client = Client()
         self.authorized_client.force_login(PostURLTests.user)
         self.nonauthor_client = Client()
@@ -60,10 +68,10 @@ class PostURLTests(TestCase):
 
     def test_url_exists_at_desired_location(self):
         """Страницы доступные гостям и авторизованным пользователям."""
-        for dict in self.list_of_difrnt_clients:
+        for dict in self.LIST_OF_DIFFERENT_CLIENTS:
             for address in dict:
                 with self.subTest(address=address):
-                    if dict == self.url_names_for_guests:
+                    if dict == self.URL_NAMES_FOR_GUESTS:
                         client = self.guest_client
                         if address == '/unexisting_page/':
                             httpstatus = HTTPStatus.NOT_FOUND
@@ -88,7 +96,7 @@ class PostURLTests(TestCase):
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
-        for address, template in self.routes_to_templates.items():
+        for address, template in self.ROUTES_TO_TEMPLATES.items():
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
                 self.assertTemplateUsed(response, template)

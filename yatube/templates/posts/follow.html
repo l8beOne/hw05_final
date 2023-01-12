@@ -5,7 +5,7 @@
   <main>
     <div class="container py-5">
       {% cache 20 index_page %}
-      {% include 'posts/includes/switcher.html' %}
+      {% include 'posts/includes/switcher.html' with follow=True %}
       {% for post in page_obj %}
       <article>
         {% include 'includes/post_card.html' %}

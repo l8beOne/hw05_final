@@ -4,7 +4,7 @@ from django.views.decorators.cache import cache_page
 
 from .forms import PostForm, CommentForm
 from .models import Group, Post, User, Follow
-from .paginator import paginate_the_page
+from .utils import paginate_the_page
 
 
 @cache_page(20, key_prefix='index_page')
@@ -36,6 +36,7 @@ def profile(request, username):
     following = (
         request.user.is_authenticated
         and author.following.filter(user=request.user).exists()
+        and request.user != author
     )
     context = {
         'author': author,
@@ -106,10 +107,7 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_index(request):
-    follower = Follow.objects.filter(user=request.user).values_list(
-        'author_id', flat=True
-    )
-    post_list = Post.objects.filter(author_id__in=follower)
+    post_list = Post.objects.filter(author__following__user=request.user)
     context = {
         'page_obj': paginate_the_page(post_list, request),
         'follow': True
@@ -127,7 +125,10 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
-    author = get_object_or_404(User, username=username)
-    follower = get_object_or_404(Follow, user=request.user, author=author)
+    follower = get_object_or_404(
+        Follow,
+        user=request.user,
+        author=get_object_or_404(User, username=username)
+    )
     follower.delete()
     return redirect("posts:follow_index")
