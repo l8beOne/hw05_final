@@ -33,11 +33,11 @@ class PaginatorViewsTest(TestCase):
                 kwargs={'slug': f'{cls.group.slug}'}
             )
         )
+        cls.guest_client = Client()
+        cls.authorized_client = Client()
+        cls.authorized_client.force_login(cls.user)
 
     def setUp(self):
-        self.guest_client = Client()
-        self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
         cache.clear()
 
     def test_correct_page_context_guest_client(self):

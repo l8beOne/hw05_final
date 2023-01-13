@@ -19,36 +19,48 @@ class PostRoutesTests(TestCase):
             author=cls.user,
             group=cls.group,
         )
+        cls.REVERSE_INDEX = reverse('posts:index')
+        cls.REVERSE_GROUP_LIST = reverse(
+            'posts:group_list',
+            kwargs={'slug': cls.group.slug}
+        )
+        cls.REVERSE_PROFILE = reverse(
+            'posts:profile',
+            kwargs={'username': cls.user.username}
+        )
+        cls.REVERSE_POST_DETAIL = reverse(
+            'posts:post_detail',
+            kwargs={'post_id': cls.post.pk}
+        )
+        cls.REVERSE_POST_CREATE = reverse('posts:post_create')
+        cls.REVERSE_POST_EDIT = reverse(
+            'posts:post_edit',
+            kwargs={'post_id': cls.post.pk}
+        )
+        cls.REVERSE_ADD_COMMENT = reverse(
+            'posts:add_comment',
+            kwargs={'post_id': cls.post.pk}
+        )
+        cls.REVERSE_FOLLOW_INDEX = reverse('posts:follow_index')
+        cls.PROFILE_FOLLOW = reverse(
+            'posts:profile_follow',
+            kwargs={'username': cls.user.username}
+        )
+        cls.PROFILE_UNFOLLOW = reverse(
+            'posts:profile_unfollow',
+            kwargs={'username': cls.user.username}
+        )
         cls.ROUTS = {
-            reverse('posts:index'): '/',
-            reverse(
-                'posts:group_list',
-                kwargs={'slug': cls.group.slug}): f'/group/{cls.group.slug}/',
-            reverse(
-                'posts:profile',
-                kwargs={'username': cls.user.username}
-            ): f'/profile/{cls.user.username}/',
-            reverse(
-                'posts:post_detail',
-                kwargs={'post_id': cls.post.pk}): f'/posts/{cls.post.pk}/',
-            reverse('posts:post_create'): '/create/',
-            reverse(
-                'posts:post_edit',
-                kwargs={'post_id': cls.post.pk}
-            ): f'/posts/{cls.post.pk}/edit/',
-            reverse(
-                'posts:add_comment',
-                kwargs={'post_id': cls.post.pk}
-            ): f'/posts/{cls.post.pk}/comment/',
-            reverse('posts:follow_index'): '/follow/',
-            reverse(
-                'posts:profile_follow',
-                kwargs={'username': cls.user.username}
-            ): f'/profile/{cls.user.username}/follow/',
-            reverse(
-                'posts:profile_unfollow',
-                kwargs={'username': cls.user.username}
-            ): f'/profile/{cls.user.username}/unfollow/',
+            cls.REVERSE_INDEX: '/',
+            cls.REVERSE_GROUP_LIST: f'/group/{cls.group.slug}/',
+            cls.REVERSE_PROFILE: f'/profile/{cls.user.username}/',
+            cls.REVERSE_POST_DETAIL: f'/posts/{cls.post.pk}/',
+            cls.REVERSE_POST_CREATE: '/create/',
+            cls.REVERSE_POST_EDIT: f'/posts/{cls.post.pk}/edit/',
+            cls.REVERSE_ADD_COMMENT: f'/posts/{cls.post.pk}/comment/',
+            cls.REVERSE_FOLLOW_INDEX: '/follow/',
+            cls.PROFILE_FOLLOW: f'/profile/{cls.user.username}/follow/',
+            cls.PROFILE_UNFOLLOW: f'/profile/{cls.user.username}/unfollow/',
         }
 
     def test_routs(self):

@@ -32,7 +32,7 @@ class PostCreateFormTests(TestCase):
             slug='test-slug-2',
             description='Тестовое описание',
         )
-        cls.small_gif = (
+        cls.SMALL_GIF = (
             b"\x47\x49\x46\x38\x39\x61\x02\x00"
             b"\x01\x00\x80\x00\x00\x00\x00\x00"
             b"\xFF\xFF\xFF\x21\xF9\x04\x00\x00"
@@ -42,12 +42,12 @@ class PostCreateFormTests(TestCase):
         )
         cls.uploaded = SimpleUploadedFile(
             name="small.gif",
-            content=cls.small_gif,
+            content=cls.SMALL_GIF,
             content_type="image/gif"
         )
         cls.uploaded2 = SimpleUploadedFile(
-            name="small.gif.2",
-            content=cls.small_gif,
+            name="small2.gif",
+            content=cls.SMALL_GIF,
             content_type="image/gif"
         )
         cls.post = Post.objects.create(
@@ -98,21 +98,21 @@ class PostCreateFormTests(TestCase):
         form_data_2 = {
             'text': 'Тестовый текст поста 2',
             'group': self.group2.pk,
-            'author': self.user,
-            'image2': self.uploaded2
+            'image': self.uploaded2
         }
         response = self.authorized_client.post(
             self.post_edit_reverse,
             data=form_data_2,
             follow=True
         )
+        post = Post.objects.get(pk=self.post.pk)
+        self.assertEqual(post.author, self.user)
+        self.assertEqual(post.text, form_data_2['text'])
+        self.assertEqual(post.group, self.group2)
+        self.assertEqual(post.image.name, 'posts/small2.gif')
         self.assertRedirects(
             response,
             self.post_detail_reverse)
-        self.assertEqual(self.post.author, self.user)
-        self.assertNotEqual(self.post.text, form_data_2['text'])
-        self.assertNotEqual(self.post.group, self.group2)
-        self.assertNotEqual(self.post.image.name, 'posts/small.gif.2')
 
     def test_create_post_page_show_correct_context(self):
         """Шаблон create_post сформирован с правильным контекстом."""

@@ -34,7 +34,7 @@ class PostModelTest(TestCase):
         str_dict = {
             self.group.title: str(self.group),
             self.post.text[:Post.POST_LENGHT]: str(self.post),
-            self.comment.text: str(self.comment)
+            self.comment.text[:Comment.COMMENT_LENGHT]: str(self.comment)
         }
         for field, expected_value in str_dict.items():
             with self.subTest(field=field):

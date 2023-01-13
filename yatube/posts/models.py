@@ -67,13 +67,11 @@ class Comment(models.Model):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comments',
         verbose_name="Пост, под которым оставлен комментарий"
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='comments',
         verbose_name="Автор комментария"
     )
     text = models.TextField(
@@ -84,13 +82,14 @@ class Comment(models.Model):
         auto_now_add=True,
         verbose_name="Дата публикации комментария"
     )
+    COMMENT_LENGHT = 15
 
     class Meta:
         ordering = ['-created']
         default_related_name = 'comments'
 
     def __str__(self):
-        return self.text
+        return self.text[:15]
 
 
 class Follow(models.Model):

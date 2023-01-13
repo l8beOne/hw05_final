@@ -7,10 +7,15 @@ class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ('text', 'group', 'image')
-        help_texts = {
+        labels = {
             'text': 'Текст поста',
-            'group': 'Группа, которой принадлежит данный пост.',
-            'image': 'Картинка, которая будет содержаться в посте'
+            'group': 'Группа',
+            'image': 'Картинка'
+        }
+        help_texts = {
+            'text': 'Впиши сюда текст поста.',
+            'group': 'Определи к какой группе будет относиться пост.',
+            'image': 'Загрузите картинку'
         }
 
 

@@ -57,13 +57,13 @@ class PostURLTests(TestCase):
             login_then_edit: f'/posts/{cls.post.pk}/edit/',
             f'/posts/{cls.post.pk}/': f'/posts/{cls.post.pk}/edit/'
         }
+        cls.guest_client = Client()
+        cls.authorized_client = Client()
+        cls.authorized_client.force_login(PostURLTests.user)
+        cls.nonauthor_client = Client()
+        cls.nonauthor_client.force_login(PostURLTests.user2)
 
     def setUp(self):
-        self.guest_client = Client()
-        self.authorized_client = Client()
-        self.authorized_client.force_login(PostURLTests.user)
-        self.nonauthor_client = Client()
-        self.nonauthor_client.force_login(PostURLTests.user2)
         cache.clear()
 
     def test_url_exists_at_desired_location(self):
