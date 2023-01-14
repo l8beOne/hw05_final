@@ -1,16 +1,15 @@
 import shutil
 import tempfile
-
 from http import HTTPStatus
 
-from django.conf import settings
 from django import forms
+from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from posts.forms import PostForm
-from posts.models import Group, Post, User, Comment
+from posts.models import Comment, Group, Post, User
 
 COUNT_STEP: int = 1
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)

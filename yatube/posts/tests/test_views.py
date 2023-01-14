@@ -1,10 +1,10 @@
 from django.conf import settings
+from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.core.cache import cache
 
 from posts.forms import CommentForm
-from posts.models import Group, Post, User, Comment, Follow
+from posts.models import Comment, Follow, Group, Post, User
 
 
 class PaginatorViewsTest(TestCase):
@@ -83,40 +83,56 @@ class PostURLTests(TestCase):
             author=cls.user,
             post=cls.post
         )
-        cls.value_of_every_page = {
-            (reverse('posts:index')): 'page_obj',
-            (reverse(
-                'posts:group_list',
-                kwargs={'slug': cls.group.slug})): 'page_obj',
-            (reverse(
-                'posts:profile',
-                kwargs={'username': cls.user.username})): 'page_obj',
-            reverse(
-                'posts:post_detail',
-                kwargs={'post_id': cls.post.pk}): 'post',
-        }
-        cls.index_url = reverse('posts:index')
-        cls.group_list_url = reverse(
+        cls.REVERSE_INDEX = reverse('posts:index')
+        cls.REVERSE_GROUP_LIST = reverse(
             'posts:group_list',
-            kwargs={'slug': f'{cls.group.slug}'}
+            kwargs={'slug': cls.group.slug}
         )
-        cls.profile_url = reverse(
+        cls.REVERSE_PROFILE = reverse(
             'posts:profile',
-            kwargs={'username': f'{cls.user.username}'}
+            kwargs={'username': cls.user.username}
         )
+        cls.REVERSE_POST_DETAIL = reverse(
+            'posts:post_detail',
+            kwargs={'post_id': cls.post.pk}
+        )
+        cls.REVERSE_POST_CREATE = reverse('posts:post_create')
+        cls.REVERSE_POST_EDIT = reverse(
+            'posts:post_edit',
+            kwargs={'post_id': cls.post.pk}
+        )
+        cls.REVERSE_ADD_COMMENT = reverse(
+            'posts:add_comment',
+            kwargs={'post_id': cls.post.pk}
+        )
+        cls.REVERSE_FOLLOW_INDEX = reverse('posts:follow_index')
+        cls.PROFILE_FOLLOW = reverse(
+            'posts:profile_follow',
+            kwargs={'username': cls.user.username}
+        )
+        cls.PROFILE_UNFOLLOW = reverse(
+            'posts:profile_unfollow',
+            kwargs={'username': cls.user.username}
+        )
+        cls.VALUE_OF_EVERY_PAGE = {
+            cls.REVERSE_INDEX: 'page_obj',
+            cls.REVERSE_GROUP_LIST: 'page_obj',
+            cls.REVERSE_PROFILE: 'page_obj',
+            cls.REVERSE_POST_DETAIL: 'post',
+        }
+        cls.guest_client = Client()
+        cls.authorized_client = Client()
+        cls.authorized_client.force_login(PostURLTests.user)
+        cls.client_become_follower = Client()
+        cls.client_become_follower.force_login(cls.follower)
 
     def setUp(self):
-        self.guest_client = Client()
-        self.authorized_client = Client()
-        self.authorized_client.force_login(PostURLTests.user)
-        self.client_become_follower = Client()
-        self.client_become_follower.force_login(self.follower)
         cache.clear()
 
     def test_index_page_show_correct_context(self):
         """Шаблон index, group_list, profile, post_detail
         сформированы с правильным контекстом."""
-        for reverse_name, context_value in self.value_of_every_page.items():
+        for reverse_name, context_value in self.VALUE_OF_EVERY_PAGE.items():
             with self.subTest(reverse_name=reverse_name):
                 response = self.authorized_client.get(reverse_name)
                 if context_value != 'post':
@@ -139,9 +155,9 @@ class PostURLTests(TestCase):
 
     def test_post_added_correctly(self):
         """Пост при создании добавлен корректно"""
-        response_index = self.authorized_client.get(self.index_url)
-        response_group = self.authorized_client.get(self.group_list_url)
-        response_profile = self.authorized_client.get(self.profile_url)
+        response_index = self.authorized_client.get(self.REVERSE_INDEX)
+        response_group = self.authorized_client.get(self.REVERSE_GROUP_LIST)
+        response_profile = self.authorized_client.get(self.REVERSE_PROFILE)
         index = response_index.context['page_obj']
         group = response_group.context['page_obj']
         profile = response_profile.context['page_obj']
@@ -155,24 +171,20 @@ class PostURLTests(TestCase):
             author=self.user,
             group=self.group
         )
-        response_add = self.authorized_client.get(self.index_url).content
+        response_add = self.authorized_client.get(self.REVERSE_INDEX).content
         post.delete()
-        response_delete = self.authorized_client.get(self.index_url).content
+        response_delete = self.authorized_client.get(
+            self.REVERSE_INDEX).content
         self.assertEqual(response_add, response_delete)
         cache.clear()
         response_cache_cleared = self.authorized_client.get(
-            self.index_url).content
+            self.REVERSE_INDEX).content
         self.assertNotEqual(response_add, response_cache_cleared)
 
     def test_user_become_follower(self):
         '''Авторизованный пользователь может подписываться на пользователей'''
         follows_count = Follow.objects.count()
-        self.client_become_follower.get(
-            reverse(
-                'posts:profile_follow',
-                kwargs={'username': self.user}
-            )
-        )
+        self.client_become_follower.get(self.PROFILE_FOLLOW)
         self.assertEqual(Follow.objects.count(), follows_count + 1)
 
     def test_user_unfollow(self):
@@ -184,12 +196,7 @@ class PostURLTests(TestCase):
             author=self.user)
         new_follower.delete()
         follower_id = new_follower.pk
-        self.client_become_follower.get(
-            reverse(
-                'posts:profile_unfollow',
-                kwargs={'username': self.user}
-            )
-        )
+        self.client_become_follower.get(self.PROFILE_UNFOLLOW)
         self.assertEqual(Follow.objects.count(), follows_count)
         self.assertFalse(Follow.objects.filter(
             user=self.follower,
@@ -203,9 +210,9 @@ class PostURLTests(TestCase):
             user=self.follower,
             author=self.user)
         response_follower = self.client_become_follower.get(
-            reverse('posts:follow_index'))
+            self.REVERSE_FOLLOW_INDEX)
         response_not_follower = self.authorized_client.get(
-            reverse('posts:follow_index'))
+            self.REVERSE_FOLLOW_INDEX)
         self.assertIn(self.post, response_follower.context['page_obj'])
         self.assertNotIn(
             self.post,
