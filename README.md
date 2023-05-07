@@ -31,9 +31,10 @@ source venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
-Перейдите в папку api_yamdb/api_yamdb и примените миграции.
+Перейдите в папку yatube и примените миграции.
 
 ```
+cd yatube
 python manage.py migrate
 ```
 
