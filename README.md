@@ -10,6 +10,7 @@
 * Bootstrap
 * Unittest
 * pytest
+* HTML & CSS
 ## Как запустить проект:
 Склонируйте репозиторий:
 
