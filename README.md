@@ -1,5 +1,5 @@
 # Social Network Yatube
-<h1 align="center"><img src="https://i.gifer.com/4IS9.gif" height="300" width="400"/></h1>
+<h1 align="center"><img src="https://i.pinimg.com/originals/bf/aa/cf/bfaacf50589cd2b52d694baa2518101a.gif" height="300" width="400"/></h1>
 
 ## Описание проекта:
 Создание сайте социальной сети "Yatube"
